@@ -23,23 +23,23 @@ apt-get -y install coturn
 apt-get -y install redis-server
 
 # Modify WebRtcEndpoint.conf.ini file
-sed -i "s/;externalAddress=.*/externalAddress=${public_ip}/" /etc/kurento/modules/kurento/WebRtcEndpoint.conf.ini
+sed -i "0,/;externalAddress=.*/s//externalAddress=${public_ip}/" /etc/kurento/modules/kurento/WebRtcEndpoint.conf.ini
 
 # Modify turnserver.conf file
-sed -i "s/#external-ip=.*/external-ip=${public_ip}/" /etc/turnserver.conf
-sed -i 's/#listening-port=.*/listening-port=3478/' /etc/turnserver.conf
-sed -i 's/#fingerprint/fingerprint/' /etc/turnserver.conf
-sed -i 's/#lt-cred-mech/lt-cred-mech/' /etc/turnserver.conf
-sed -i 's/#max-port=.*/max-port=65535/' /etc/turnserver.conf
-sed -i 's/#min-port=.*/min-port=40000/' /etc/turnserver.conf
-sed -i 's/#pidfile=.*/pidfile="/var/run/turnserver.pid"/' /etc/turnserver.conf
-sed -i 's/#realm=.*/realm=openvidu/' /etc/turnserver.conf
-sed -i 's/#simple-log/simple-log/' /etc/turnserver.conf
-sed -i 's/#redis-userdb=.*/redis-userdb="ip=127.0.0.1 dbname=0 password=turn connect_timeout=30"/' /etc/turnserver.conf
-sed -i 's/#verbose/verbose/' /etc/turnserver.conf
+sed -i "0,/#external-ip=.*/s//external-ip=${public_ip}/" /etc/turnserver.conf
+sed -i '0,/#listening-port=.*/s//listening-port=3478/' /etc/turnserver.conf
+sed -i '0,/#fingerprint/s//fingerprint/' /etc/turnserver.conf
+sed -i '0,/#lt-cred-mech/s//lt-cred-mech/' /etc/turnserver.conf
+sed -i '0,/#max-port=.*/s//max-port=65535/' /etc/turnserver.conf
+sed -i '0,/#min-port=.*/s//min-port=40000/' /etc/turnserver.conf
+sed -i '0,/#pidfile=.*/s//pidfile="/var/run/turnserver.pid"/' /etc/turnserver.conf
+sed -i '0,/#realm=.*/s//realm=openvidu/' /etc/turnserver.conf
+sed -i '0,/#simple-log/s//simple-log/' /etc/turnserver.conf
+sed -i '0,/#redis-userdb=.*/s//redis-userdb="ip=127.0.0.1 dbname=0 password=turn connect_timeout=30"/' /etc/turnserver.conf
+sed -i '0,/#verbose/s//verbose/' /etc/turnserver.conf
 
 # Modify coturn file
-sed -i 's/#TURNSERVER_ENABLED=.*/TURNSERVER_ENABLED=1/' /etc/default/coturn
+sed -i '0,/#TURNSERVER_ENABLED=.*/s//TURNSERVER_ENABLED=1/' /etc/default/coturn
 
 # Restart services
 service redis-server restart

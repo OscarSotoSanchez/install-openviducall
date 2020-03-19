@@ -35,8 +35,6 @@ apt-get -y install redis-server
 
 # Modify WebRtcEndpoint.conf.ini file
 sed -i "0,/;externalAddress=.*/s//externalAddress=${public_ip}/" /etc/kurento/modules/kurento/WebRtcEndpoint.conf.ini
-sed -i "0,/;stunServerAddress=.*/s//stunServerAddress=${public_ip}/" /etc/kurento/modules/kurento/WebRtcEndpoint.conf.ini
-sed -i "0,/;stunServerPort=.*/s//stunServerPort=3478/" /etc/kurento/modules/kurento/WebRtcEndpoint.conf.ini
 
 # Modify turnserver.conf file
 sed -i "0,/#external-ip=.*/s//external-ip=${public_ip}/" /etc/turnserver.conf
@@ -200,17 +198,13 @@ cat > /var/www/openvidu-call/ov-settings.json<<EOF
                 }
         },
         "openviduCredentials": {
-                "openvidu_url": "http://${public_ip}:4443",
+                "openvidu_url": "https://${public_ip}:4443",
                 "openvidu_secret": "${openvidu_secrect}"
         }
 }
 EOF
 
 chown -R www-data.www-data /var/www/openvidu-call
-
-
-
-
 
 # Restart services
 service redis-server restart
@@ -223,3 +217,10 @@ export LC_CTYPE=en_US.UTF-8
 export LC_ALL=en_US.UTF-8
 
 update-rc.d kurento-media-server defaults
+
+# Display info
+echo -e "====================================================="
+echo -e "= Auto Install Openvidu CE and Openvidu Call Script ="
+echo -e "====================================================="
+echo -e "To connect to openvidu ce: https://${public_ip}:4443"
+echo -e "To connect to openvidu call: https://${public_ip}"

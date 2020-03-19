@@ -9,8 +9,11 @@ public_ip=$(curl ifconfig.co)
 openvidu_secrect=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1)
 
 # Read user input
-read -p "Please enter your machine public ip [default: ${public_ip}]: " public_ip
-read -p "Please enter your openvidu secret [default: ${openvidu_secrect}]: " openvidu_secrect
+read -p "Please enter your machine public ip [default: ${public_ip}]: " input_public_ip
+read -p "Please enter your openvidu secret [default: ${openvidu_secrect}]: " input_openvidu_secrect
+
+[[ ! -z "${input_public_ip}" ]] && public_ip=${input_public_ip}
+[[ ! -z "${input_openvidu_secrect}" ]] && openvidu_secrect=${input_openvidu_secrect}
 
 # Create Openvidu user
 useradd openvidu
@@ -106,7 +109,69 @@ systemctl enable openvidu
 apt-get install -y nginx
 rm /etc/nginx/sites-enabled/default
 rm /etc/nginx/sites-available/default
-# ln -s /etc/nginx/sites-available/openvidu-call.conf /etc/nginx/sites-enabled/openvidu-call.conf
+
+cat > /etc/nginx/sites-available/kms.conf<<EOF
+server {
+        listen 4443;
+        # server_name example.name.es;
+
+        # ssl on;
+        # ssl_certificate         /etc/letsencrypt/live/call.openvidu.io/fullchain.pem;
+        # ssl_certificate_key     /etc/letsencrypt/live/call.openvidu.io/privkey.pem;
+        # ssl_trusted_certificate /etc/letsencrypt/live/call.openvidu.io/fullchain.pem;
+
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header X-Forwarded-Proto https;
+        proxy_headers_hash_bucket_size 512;
+        proxy_redirect off;
+
+        # Websockets
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+
+        location / {
+                proxy_pass http://localhost:5443;
+        }
+}
+EOF
+ln -s /etc/nginx/sites-available/kms.conf /etc/nginx/sites-enabled/kms.conf
+
+cat > /etc/nginx/sites-available/openvidu-call.conf<<EOF
+server {
+        listen 443;
+        # server_name example.name.es;
+
+        # ssl on;
+        # ssl_certificate /etc/letsencrypt/live/call.openvidu.io/fullchain.pem; # managed by Certbot
+        # ssl_certificate_key /etc/letsencrypt/live/call.openvidu.io/privkey.pem; # managed by Certbot
+        # ssl_trusted_certificate /etc/letsencrypt/live/call.openvidu.io/fullchain.pem;
+
+        ssl_session_cache shared:SSL:50m;
+        ssl_session_timeout 5m;
+        ssl_stapling on;
+        ssl_stapling_verify on;
+
+        ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
+        ssl_ciphers "ECDHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-SHA384:ECDHE-RSA-AES128-SHA256:ECDHE-RSA-AES256-SHA:ECDHE-RSA-AES128-SHA:DHE-RSA-AES256-SHA256:DHE-RSA-AES128-SHA256:DHE-RSA-AES256-SHA:DHE-RSA-AES128-SHA:ECDHE-RSA-DES-CBC3-SHA:EDH-RSA-DES-CBC3-SHA:AES256-GCM-SHA384:AES128-GCM-SHA256:AES256-SHA256:AES128-SHA256:AES256-SHA:AES128-SHA:DES-CBC3-SHA:HIGH:!aNULL:!eNULL:!EXPORT:!DES:!MD5:!PSK:!RC4";
+
+        ssl_prefer_server_ciphers on;
+
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header X-Forwarded-Proto https;
+        proxy_headers_hash_bucket_size 512;
+        proxy_redirect off;
+
+        root /var/www/openvidu-call;
+}
+EOF
+ln -s /etc/nginx/sites-available/openvidu-call.conf /etc/nginx/sites-enabled/openvidu-call.conf
 
 # Install Openvidu Call
 mkdir /var/www/openvidu-call
@@ -129,7 +194,7 @@ cat > /var/www/openvidu-call/ov-settings.json<<EOF
                 }
         },
         "openviduCredentials": {
-                "openvidu_url": "http://192.168.1.40:4443",
+                "openvidu_url": "http://${public_ip}:4443",
                 "openvidu_secret": "${openvidu_secrect}"
         }
 }

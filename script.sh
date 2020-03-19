@@ -1,9 +1,11 @@
 #!/usr/bin/env bash
 
+# Install necesary tools
+apt-get update \
+apt-get install -y wget curl
+
 public_ip=$(curl ifconfig.co)
-while [ -z "$public_ip" ]; do
-        read -p "Please enter yout machine public ip [default $public_ip]: " public_ip
-done
+read -p "Please enter yout machine public ip [default $public_ip]: " public_ip
 
 # Create Openvidu user
 useradd openvidu
@@ -66,7 +68,7 @@ OPENVIDU_OPTIONS+="-Dopenvidu.publicurl=https://$public_ip:4443 "
 OPENVIDU_OPTIONS+="-Dserver.port=5443 "
 
 exec java -jar ${OPENVIDU_OPTIONS} /opt/openvidu/openvidu-server.jar
-EOF 
+EOF
 
 # Install nginx
 apt-get install -y nginx
@@ -99,7 +101,7 @@ cat > /var/www/openvidu-call/ov-settings.json<<EOF
                 "openvidu_secret": "prueba"
         }
 }
-EOF 
+EOF
 
 chown -R www-data.www-data /var/www/openvidu-call
 

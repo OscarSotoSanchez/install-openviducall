@@ -1,1 +1,1 @@
-`sudo bash -c 'bash <(wget -qO- https://raw.githubusercontent.com/OscarSotoSanchez/install-openviducall/master/script.sh)'`
+`sudo bash -c 'bash <(curl -s https://raw.githubusercontent.com/OscarSotoSanchez/install-openviducall/master/script.sh)'`

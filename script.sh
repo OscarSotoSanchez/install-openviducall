@@ -13,7 +13,7 @@ apt-get update \
 apt-get install -y wget curl
 
 # General Variables
-public_ip=$(curl ifconfig.co)
+public_ip=$(curl -s ifconfig.co)
 openvidu_secrect=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1)
 
 # Read user input
@@ -35,6 +35,7 @@ systemctl disable openvidu | true
 rm -rf /opt/openvidu | true
 rm -f /etc/systemd/system/openvidu.service | true
 
+rm -rf /etc/ssl/openvidu | true
 rm /etc/nginx/sites-available/kms.conf | true
 rm /etc/nginx/sites-available/openvidu-call.conf | true
 service nginx restart | true

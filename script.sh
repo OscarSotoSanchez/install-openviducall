@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 
+public_ip=$(curl ifconfig.co)
 while [ -z "$public_ip" ]; do
-        read -p "Please enter yout machine public ip: " public_ip
+        read -p "Please enter yout machine public ip [default $public_ip]: " public_ip
 done
 
 # Create Openvidu user

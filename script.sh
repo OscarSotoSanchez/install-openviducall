@@ -60,7 +60,7 @@ last_openvidu_release=$(wget -q https://github.com/OpenVidu/openvidu/releases/la
 wget -L -O /opt/openvidu/openvidu-server.jar "https://github.com/OpenVidu/openvidu/releases/download/v${last_openvidu_release}/openvidu-server-${last_openvidu_release}.jar"
 chown -R openvidu:openvidu /opt/openvidu
 
-cat > openvidu-server.sh<<EOF
+cat > /opt/openvidu/openvidu-server.sh<<EOF
 #!/bin/bash
 
 # This script will launch OpenVidu Server on your machine

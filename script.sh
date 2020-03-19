@@ -244,5 +244,6 @@ update-rc.d kurento-media-server defaults
 echo -e "====================================================="
 echo -e "= Auto Install Openvidu CE and Openvidu Call Script ="
 echo -e "====================================================="
+echo -e "Secrect: ${openvidu_secrect}"
 echo -e "To connect to Openvidu CE: https://${public_ip}:4443"
 echo -e "To connect to Openvidu Call: https://${public_ip}"

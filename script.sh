@@ -4,12 +4,12 @@
 if [ "$EUID" -ne 0 ]
   then 
   echo "Please run as root"
-  echo "Usage: sudo bash -c 'bash <(wget -qO- https://raw.githubusercontent.com/OscarSotoSanchez/install-openviducall/master/script.sh)'"
+  echo "Usage: sudo bash -c 'bash <(curl -s https://raw.githubusercontent.com/OscarSotoSanchez/install-openviducall/master/script.sh)'"
   exit
 fi
 
 # Install necesary tools
-apt-get update \
+apt-get update && \
 apt-get install -y wget curl
 
 # General Variables
@@ -27,9 +27,9 @@ read -p "Please enter your openvidu secret [default: ${openvidu_secrect}]: " inp
 useradd openvidu | true
 
 # Unistall previous installation
-apt-get purge -y kurento-media-server \
-coturn \
-redis-server
+apt-get purge -y kurento-media-server | true
+apt-get purge -y coturn | true
+apt-get purge -y redis-server | true
 
 systemctl disable openvidu | true
 rm -rf /opt/openvidu | true

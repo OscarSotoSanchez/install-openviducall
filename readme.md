@@ -1,0 +1,1 @@
+`sudo bash -c 'bash <(wget -qO- https://raw.githubusercontent.com/OscarSotoSanchez/install-openviducall/master/script.sh)'`

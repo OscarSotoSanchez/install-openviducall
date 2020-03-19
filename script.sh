@@ -70,6 +70,33 @@ OPENVIDU_OPTIONS+="-Dserver.port=5443 "
 exec java -jar ${OPENVIDU_OPTIONS} /opt/openvidu/openvidu-server.jar
 EOF
 
+chmod +x /opt/openvidu/openvidu-server.sh
+
+cat > /etc/systemd/system/openvidu.service<<EOF
+[Unit]
+Description=Openvidu Service
+After=network.target
+
+[Service]
+User=openvidu
+Group=openvidu
+
+ExecStart=/opt/openvidu/openvidu-server.sh
+
+StandardOutput=append:/var/openvidu.log
+StandardError=append:/var/openvidu-error.log
+
+SuccessExitStatus=143
+TimeoutStopSec=10
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+systemctl enable openvidu
+
 # Install nginx
 apt-get install -y nginx
 rm /etc/nginx/sites-enabled/default
@@ -111,6 +138,7 @@ service redis-server restart
 service coturn restart
 service kurento-media-server restar
 service nginx restart
+service openvidu restart
 
 export LC_CTYPE=en_US.UTF-8
 export LC_ALL=en_US.UTF-8

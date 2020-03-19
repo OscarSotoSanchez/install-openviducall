@@ -1,16 +1,16 @@
 #!/usr/bin/env bash
 
+# Install necesary tools
+apt-get update \
+apt-get install -y wget curl
+
 # General Variables
 public_ip=$(curl ifconfig.co)
 openvidu_secrect=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1)
 
 # Read user input
-read -p "Please enter your machine public ip [default $public_ip]: " public_ip
-read -p "Please enter your openvidu secret [default $openvidu_secret]: " openvidu_secrect
-
-# Install necesary tools
-apt-get update \
-apt-get install -y wget curl
+read -p "Please enter your machine public ip [default: ${public_ip}]: " public_ip
+read -p "Please enter your openvidu secret [default: ${openvidu_secrect}]: " openvidu_secrect
 
 # Create Openvidu user
 useradd openvidu
@@ -57,7 +57,7 @@ apt-get install -y openjdk-8-jre
 # Install Openvidu
 mkdir /opt/openvidu
 last_openvidu_release=$(wget -q https://github.com/OpenVidu/openvidu/releases/latest -O - | grep -E \/tag\/ | awk -F "[><]" '{print $3}' | sed ':a;N;$!ba;s/\n//g' | sed 's/v//')
-wget -O /opt/openvidu/openvidu-server.jar "https://github.com/OpenVidu/openvidu/releases/download/v${last_openvidu_release}/openvidu-server-${last_openvidu_release}.jar"
+wget -L -O /opt/openvidu/openvidu-server.jar "https://github.com/OpenVidu/openvidu/releases/download/v${last_openvidu_release}/openvidu-server-${last_openvidu_release}.jar"
 chown -R openvidu:openvidu /opt/openvidu
 
 cat > openvidu-server.sh<<EOF
@@ -111,7 +111,7 @@ rm /etc/nginx/sites-available/default
 # Install Openvidu Call
 mkdir /var/www/openvidu-call
 last_openvidu_call_release=$(wget -q https://github.com/OpenVidu/openvidu-call/releases/tag/v2.12.0 -O - | grep -E \/tag\/ | awk -F "[><]" '{print $3}' | sed ':a;N;$!ba;s/\n//g' | sed 's/v//')
-wget -L -o /var/www/openvidu-call/openvidu-call.tar.gz "https://github.com/OpenVidu/openvidu-call/releases/download/v${last_openvidu_call_release}/openvidu-call-${last_openvidu_call_release}.tar.gz"
+wget -L -O /var/www/openvidu-call/openvidu-call.tar.gz "https://github.com/OpenVidu/openvidu-call/releases/download/v${last_openvidu_call_release}/openvidu-call-${last_openvidu_call_release}.tar.gz"
 tar zxf /var/www/openvidu-call/openvidu-call.tar.gz -C /var/www/openvidu-call
 rm /var/www/openvidu-call/openvidu-call.tar.gz
 

@@ -12,8 +12,8 @@ openvidu_secrect=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 
 read -p "Please enter your machine public ip [default: ${public_ip}]: " input_public_ip
 read -p "Please enter your openvidu secret [default: ${openvidu_secrect}]: " input_openvidu_secrect
 
-[[ ! -z "${input_public_ip}" ]] && public_ip=${input_public_ip}
-[[ ! -z "${input_openvidu_secrect}" ]] && openvidu_secrect=${input_openvidu_secrect}
+[[ ! -z "${input_public_ip}" ]] && public_ip=$(echo ${input_public_ip} | sed 's/v//')
+[[ ! -z "${input_openvidu_secrect}" ]] && openvidu_secrect=$(echo ${input_openvidu_secrect} | sed 's/v//')
 
 # Create Openvidu user
 useradd openvidu
@@ -73,7 +73,7 @@ OPENVIDU_OPTIONS+="-Dserver.ssl.enabled=false "
 OPENVIDU_OPTIONS+="-Dopenvidu.publicurl=https://${public_ip}:4443 "
 OPENVIDU_OPTIONS+="-Dserver.port=5443 "
 
-exec java -jar ${OPENVIDU_OPTIONS} /opt/openvidu/openvidu-server.jar
+exec java -jar \${OPENVIDU_OPTIONS} /opt/openvidu/openvidu-server.jar
 EOF
 
 chmod +x /opt/openvidu/openvidu-server.sh
@@ -222,5 +222,5 @@ update-rc.d kurento-media-server defaults
 echo -e "====================================================="
 echo -e "= Auto Install Openvidu CE and Openvidu Call Script ="
 echo -e "====================================================="
-echo -e "To connect to openvidu ce: https://${public_ip}:4443"
-echo -e "To connect to openvidu call: https://${public_ip}"
+echo -e "To connect to Openvidu CE: https://${public_ip}:4443"
+echo -e "To connect to Openvidu Call: https://${public_ip}"

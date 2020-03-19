@@ -1,5 +1,13 @@
 #!/usr/bin/env bash
 
+# Necessary root user
+if [ "$EUID" -ne 0 ]
+  then 
+  echo "Please run as root"
+  echo "Usage: sudo bash -c 'bash <(wget -qO- https://raw.githubusercontent.com/OscarSotoSanchez/install-openviducall/master/script.sh)'"
+  exit
+fi
+
 # Install necesary tools
 apt-get update \
 apt-get install -y wget curl
@@ -16,7 +24,22 @@ read -p "Please enter your openvidu secret [default: ${openvidu_secrect}]: " inp
 [[ ! -z "${input_openvidu_secrect}" ]] && openvidu_secrect=$(echo ${input_openvidu_secrect} | sed 's/v//')
 
 # Create Openvidu user
-useradd openvidu
+useradd openvidu | true
+
+# Unistall previous installation
+apt-get purge -y kurento-media-server \
+coturn \
+redis-server
+
+systemctl disable openvidu | true
+rm -rf /opt/openvidu | true
+rm -f /etc/systemd/system/openvidu.service | true
+
+rm /etc/nginx/sites-available/kms.conf | true
+rm /etc/nginx/sites-available/openvidu-call.conf | true
+service nginx restart | true
+
+rm /var/www/openvidu-call | true
 
 # Install KMS
 echo "deb [arch=amd64] http://ubuntu.openvidu.io/6.13.0 xenial kms6" | sudo tee /etc/apt/sources.list.d/kurento.list

@@ -105,20 +105,26 @@ EOF
 
 systemctl enable openvidu
 
-# Install nginx
-apt-get install -y nginx
-rm /etc/nginx/sites-enabled/default
-rm /etc/nginx/sites-available/default
+# Install nginx and openssl
+apt-get install -y nginx openssl
+#rm /etc/nginx/sites-enabled/default
+#rm /etc/nginx/sites-available/default
+
+# Create certificate
+mkdir -p /etc/ssl/openvidu | true
+openssl req -new -newkey rsa:4096 -days 365 -nodes -x509 \
+    -subj "/C=/ST=/L=/O=/CN=openvidu-call" \
+    -keyout /etc/ssl/openvidu/openvidu-call.key -out /etc/ssl/openvidu/openvidu-call.cert
 
 cat > /etc/nginx/sites-available/kms.conf<<EOF
 server {
-        listen 4443;
+        listen 4443 ssl;
         # server_name example.name.es;
 
-        # ssl on;
-        # ssl_certificate         /etc/letsencrypt/live/call.openvidu.io/fullchain.pem;
-        # ssl_certificate_key     /etc/letsencrypt/live/call.openvidu.io/privkey.pem;
-        # ssl_trusted_certificate /etc/letsencrypt/live/call.openvidu.io/fullchain.pem;
+        ssl on;
+        ssl_certificate         /etc/ssl/openvidu/openvidu-call.cert;
+        ssl_certificate_key     /etc/ssl/openvidu/openvidu-call.key;
+        ssl_trusted_certificate /etc/ssl/openvidu/openvidu-call.cert;
 
         proxy_set_header Host \$host;
         proxy_set_header X-Real-IP \$remote_addr;
@@ -142,13 +148,13 @@ ln -s /etc/nginx/sites-available/kms.conf /etc/nginx/sites-enabled/kms.conf
 
 cat > /etc/nginx/sites-available/openvidu-call.conf<<EOF
 server {
-        listen 443;
+        listen 443 ssl;
         # server_name example.name.es;
 
-        # ssl on;
-        # ssl_certificate /etc/letsencrypt/live/call.openvidu.io/fullchain.pem; # managed by Certbot
-        # ssl_certificate_key /etc/letsencrypt/live/call.openvidu.io/privkey.pem; # managed by Certbot
-        # ssl_trusted_certificate /etc/letsencrypt/live/call.openvidu.io/fullchain.pem;
+        ssl on;
+        ssl_certificate         /etc/ssl/openvidu/openvidu-call.cert;
+        ssl_certificate_key     /etc/ssl/openvidu/openvidu-call.key;
+        ssl_trusted_certificate /etc/ssl/openvidu/openvidu-call.cert;
 
         ssl_session_cache shared:SSL:50m;
         ssl_session_timeout 5m;
@@ -201,6 +207,9 @@ cat > /var/www/openvidu-call/ov-settings.json<<EOF
 EOF
 
 chown -R www-data.www-data /var/www/openvidu-call
+
+
+
 
 
 # Restart services

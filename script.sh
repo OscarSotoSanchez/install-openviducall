@@ -8,10 +8,6 @@ if [ "$EUID" -ne 0 ]
   exit
 fi
 
-# Install necesary tools
-apt-get update && \
-apt-get install -y wget curl
-
 # General Variables
 public_ip=$(curl -s ifconfig.co)
 openvidu_secrect=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1)
@@ -22,6 +18,10 @@ read -p "Please enter your openvidu secret [default: ${openvidu_secrect}]: " inp
 
 [[ ! -z "${input_public_ip}" ]] && public_ip=$(echo ${input_public_ip} | sed 's/v//')
 [[ ! -z "${input_openvidu_secrect}" ]] && openvidu_secrect=$(echo ${input_openvidu_secrect} | sed 's/v//')
+
+# Install necesary tools
+apt-get update && \
+apt-get install -y wget curl
 
 # Create Openvidu user
 useradd openvidu | true

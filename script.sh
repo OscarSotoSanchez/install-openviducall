@@ -1,11 +1,16 @@
 #!/usr/bin/env bash
 
+# General Variables
+public_ip=$(curl ifconfig.co)
+openvidu_secrect=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1)
+
+# Read user input
+read -p "Please enter your machine public ip [default $public_ip]: " public_ip
+read -p "Please enter your openvidu secret [default $openvidu_secret]: " openvidu_secrect
+
 # Install necesary tools
 apt-get update \
 apt-get install -y wget curl
-
-public_ip=$(curl ifconfig.co)
-read -p "Please enter yout machine public ip [default $public_ip]: " public_ip
 
 # Create Openvidu user
 useradd openvidu
@@ -55,16 +60,16 @@ last_openvidu_release=$(wget -q https://github.com/OpenVidu/openvidu/releases/la
 wget -O /opt/openvidu/openvidu-server.jar "https://github.com/OpenVidu/openvidu/releases/download/v${last_openvidu_release}/openvidu-server-${last_openvidu_release}.jar"
 chown -R openvidu:openvidu /opt/openvidu
 
-cat > /opt/openvidu/openvidu-server.sh<<EOF
+cat > openvidu-server.sh<<EOF
 #!/bin/bash
 
 # This script will launch OpenVidu Server on your machine
 
-OPENVIDU_SECRET="prueba"
+OPENVIDU_SECRET="${openvidu_secrect}"
 
-OPENVIDU_OPTIONS="-Dopenvidu.secret=$OPENVIDU_SECRET "
+OPENVIDU_OPTIONS="-Dopenvidu.secret=\${OPENVIDU_SECRET} "
 OPENVIDU_OPTIONS+="-Dserver.ssl.enabled=false "
-OPENVIDU_OPTIONS+="-Dopenvidu.publicurl=https://$public_ip:4443 "
+OPENVIDU_OPTIONS+="-Dopenvidu.publicurl=https://${public_ip}:4443 "
 OPENVIDU_OPTIONS+="-Dserver.port=5443 "
 
 exec java -jar ${OPENVIDU_OPTIONS} /opt/openvidu/openvidu-server.jar
@@ -106,7 +111,7 @@ rm /etc/nginx/sites-available/default
 # Install Openvidu Call
 mkdir /var/www/openvidu-call
 last_openvidu_call_release=$(wget -q https://github.com/OpenVidu/openvidu-call/releases/tag/v2.12.0 -O - | grep -E \/tag\/ | awk -F "[><]" '{print $3}' | sed ':a;N;$!ba;s/\n//g' | sed 's/v//')
--L -o /var/www/openvidu-call/openvidu-call.tar.gz "https://github.com/OpenVidu/openvidu-call/releases/download/v${last_openvidu_call_release}/openvidu-call-${last_openvidu_call_release}.tar.gz"
+wget -L -o /var/www/openvidu-call/openvidu-call.tar.gz "https://github.com/OpenVidu/openvidu-call/releases/download/v${last_openvidu_call_release}/openvidu-call-${last_openvidu_call_release}.tar.gz"
 tar zxf /var/www/openvidu-call/openvidu-call.tar.gz -C /var/www/openvidu-call
 rm /var/www/openvidu-call/openvidu-call.tar.gz
 
@@ -125,7 +130,7 @@ cat > /var/www/openvidu-call/ov-settings.json<<EOF
         },
         "openviduCredentials": {
                 "openvidu_url": "http://192.168.1.40:4443",
-                "openvidu_secret": "prueba"
+                "openvidu_secret": "${openvidu_secrect}"
         }
 }
 EOF
@@ -136,7 +141,7 @@ chown -R www-data.www-data /var/www/openvidu-call
 # Restart services
 service redis-server restart
 service coturn restart
-service kurento-media-server restar
+service kurento-media-server restart
 service nginx restart
 service openvidu restart
 

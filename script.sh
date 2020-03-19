@@ -59,7 +59,6 @@ apt-get install -y openjdk-8-jre
 mkdir /opt/openvidu
 last_openvidu_release=$(wget -q https://github.com/OpenVidu/openvidu/releases/latest -O - | grep -E \/tag\/ | awk -F "[><]" '{print $3}' | sed ':a;N;$!ba;s/\n//g' | sed 's/v//')
 wget -L -O /opt/openvidu/openvidu-server.jar "https://github.com/OpenVidu/openvidu/releases/download/v${last_openvidu_release}/openvidu-server-${last_openvidu_release}.jar"
-chown -R openvidu:openvidu /opt/openvidu
 
 cat > /opt/openvidu/openvidu-server.sh<<EOF
 #!/bin/bash
@@ -77,6 +76,7 @@ exec java -jar \${OPENVIDU_OPTIONS} /opt/openvidu/openvidu-server.jar
 EOF
 
 chmod +x /opt/openvidu/openvidu-server.sh
+chown -R openvidu:openvidu /opt/openvidu
 
 cat > /etc/systemd/system/openvidu.service<<EOF
 [Unit]
@@ -105,8 +105,6 @@ systemctl enable openvidu
 
 # Install nginx and openssl
 apt-get install -y nginx openssl
-#rm /etc/nginx/sites-enabled/default
-#rm /etc/nginx/sites-available/default
 
 # Create certificate
 mkdir -p /etc/ssl/openvidu | true

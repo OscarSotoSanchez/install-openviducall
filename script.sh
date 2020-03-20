@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+# Define locales
+export LC_CTYPE=en_US.UTF-8
+export LC_ALL=en_US.UTF-8
+
 # Necessary root user
 if [ "$EUID" -ne 0 ]
   then 
@@ -30,6 +34,7 @@ useradd openvidu | true
 apt-get purge -y kurento-media-server | true
 apt-get purge -y coturn | true
 apt-get purge -y redis-server | true
+apt-get -y autoremove | true
 
 systemctl disable openvidu | true
 rm -rf /opt/openvidu | true
@@ -38,9 +43,11 @@ rm -f /etc/systemd/system/openvidu.service | true
 rm -rf /etc/ssl/openvidu | true
 rm /etc/nginx/sites-available/kms.conf | true
 rm /etc/nginx/sites-available/openvidu-call.conf | true
+rm /etc/nginx/sites-enabled/openvidu-call.conf | true
+
 service nginx restart | true
 
-rm /var/www/openvidu-call | true
+rm -rf /var/www/openvidu-call | true
 
 # Install KMS
 echo "deb [arch=amd64] http://ubuntu.openvidu.io/6.13.0 xenial kms6" | sudo tee /etc/apt/sources.list.d/kurento.list
@@ -235,9 +242,7 @@ service kurento-media-server restart
 service nginx restart
 service openvidu restart
 
-export LC_CTYPE=en_US.UTF-8
-export LC_ALL=en_US.UTF-8
-
+# Auto start kms
 update-rc.d kurento-media-server defaults
 
 # Display info
@@ -247,3 +252,4 @@ echo -e "====================================================="
 echo -e "Secrect: ${openvidu_secrect}"
 echo -e "To connect to Openvidu CE: https://${public_ip}:4443"
 echo -e "To connect to Openvidu Call: https://${public_ip}"
+exit 0

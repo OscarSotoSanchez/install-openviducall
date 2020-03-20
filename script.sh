@@ -16,8 +16,8 @@ openvidu_secrect=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 
 read -p "Please enter your machine public ip [default: ${public_ip}]: " input_public_ip
 read -p "Please enter your openvidu secret [default: ${openvidu_secrect}]: " input_openvidu_secrect
 
-[[ ! -z "${input_public_ip}" ]] && public_ip=$(echo ${input_public_ip} | sed 's/v//')
-[[ ! -z "${input_openvidu_secrect}" ]] && openvidu_secrect=$(echo ${input_openvidu_secrect} | sed 's/v//')
+[[ ! -z "${input_public_ip}" ]] && public_ip=$(echo ${input_public_ip} | sed 's/v//' | sed 's/\r//g')
+[[ ! -z "${input_openvidu_secrect}" ]] && openvidu_secrect=$(echo ${input_openvidu_secrect} | sed 's/v//' | sed 's/\r//g')
 
 # Install necesary tools
 apt-get update && \
